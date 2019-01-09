@@ -158,5 +158,5 @@ while 1:
                             
 if __name__ == "__main__":
     # discordToken is the value you get when creating the bot
-    discordToken = '0tosOZASAj5cGaEwuMCDd6gtMYCGtIvd' ##//Input your DiscordToken here
+    discordToken = 'NTI2MDk0MzY5MjYzMTkwMDQx.DxbtFQ.E9rkdlsiKxcrKyDMsA9m2vF-AuQ' ##//Input your DiscordToken here
     client.run(discordToken)
