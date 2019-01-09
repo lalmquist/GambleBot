@@ -17,7 +17,10 @@ with open('Members.json') as f:
     Members = json.load(f)
 
 def get_balance(user):
-    return Members[user]
+    lol = str(user)
+    abcd = Members[lol]
+    strabcd = str(abcd)
+    return strabcd
 
 
 def update_balance(user, newBal):
@@ -44,14 +47,18 @@ def gamble(user, gambleamount):
 @client.event
 async def on_message(message):
 
+    #check_time()
+
     if message.author == client.user:
         return
 
     # Gather UserID and encode values
-    userID = message.author.id
-    userID = userID.encode('utf-8')
+    userID = message.author
+    #userID = userID.encode('utf-8')
     userName = "#" + str(message.author.discriminator)
     userName = userName.encode('utf-8')
+
+    print(userID)
 
     # !gamble command
     if message.content.startswith('!gamble'):
@@ -109,6 +116,7 @@ async def on_message(message):
 
     # !balance command
     elif message.content == '!balance':
+        print(Members)
         user_balance = get_balance(userName)
         await client.send_message(message.channel, 'Your balance is ')
 
@@ -137,7 +145,7 @@ def check_time():
     currtime = time.time()
     global pasttime
     # update balance every X seconds
-    delay = -1
+    delay = 5
         
     # calculate when to update
     timediff = currtime - delay
@@ -161,7 +169,6 @@ def check_time():
                 currbalance = currbalance + 1 
                 update_balance(member, currbalance)
 
-#check_time()
    
 if __name__ == "__main__":
     # discordToken is the value you get when creating the bot
