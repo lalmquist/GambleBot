@@ -37,8 +37,6 @@ def add_member(user):
 def gamble(user, gambleamount):
     return
     
-
-
 @client.event
 async def on_message(message):
     if message.author == client.user:
@@ -109,9 +107,9 @@ async def on_message(message):
         user_balance = get_balance(userName)
         await client.send_message(message.channel, 'Your balance is ')
 
-    # Chirp Chirp
-    if user_balance < 1000:
-        await client.send_message(message.channel, 'You gotta pump those numbers up, those are rookie numbers!')
+        # Chirp Chirp
+        if user_balance < 1000:
+            await client.send_message(message.channel, 'You gotta pump those numbers up, those are rookie numbers!')
             
     elif message.content == '!balanceall':
         all_user_balance = get_balance_all()
@@ -127,9 +125,9 @@ async def on_ready():
 def check_time():
     # check current time
     currtime = time.time()
-    
+    global pasttime
     # update balance every X seconds
-    delay = 5
+    delay = -1
         
     # calculate when to update
     timediff = currtime - delay
@@ -153,8 +151,8 @@ def check_time():
                 currbalance = currbalance + 1 
                 update_balance(member, currbalance)
 
-while 1:
-    check_time()
+check_time()
+print(client.get_all_members())
                             
 if __name__ == "__main__":
     # discordToken is the value you get when creating the bot
