@@ -21,7 +21,8 @@ def get_balance(user):
 
 
 def update_balance(user, newBal):
-    Members[user] = newBal
+    struser = str(user)
+    Members[struser] = newBal
     with open('Members.json', 'w') as outfile:
         json.dump(Members, outfile)
 
@@ -31,14 +32,18 @@ def get_balance_all():
 
 
 def add_member(user):
+    struserr = str(user)
     if user not in Members:
-        Members[user] = 0
+        Members[struserr] = 0
+        with open('Members.json', 'w') as outfile:
+            json.dump(Members, outfile)
 
 def gamble(user, gambleamount):
     return
     
 @client.event
 async def on_message(message):
+
     if message.author == client.user:
         return
 
@@ -121,6 +126,11 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('------')
+    # create array of online members
+    for member in client.get_all_members():
+        # add member if they are new
+        if member not in Members:
+            add_member(member)
 
 def check_time():
     # check current time
@@ -151,9 +161,8 @@ def check_time():
                 currbalance = currbalance + 1 
                 update_balance(member, currbalance)
 
-check_time()
-print(client.get_all_members())
-                            
+#check_time()
+   
 if __name__ == "__main__":
     # discordToken is the value you get when creating the bot
     discordToken = 'NTI2MDk0MzY5MjYzMTkwMDQx.DxbtFQ.E9rkdlsiKxcrKyDMsA9m2vF-AuQ' ##//Input your DiscordToken here
