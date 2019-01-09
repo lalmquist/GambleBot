@@ -52,18 +52,15 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    # Gather UserID and encode values
     userID = message.author
     #userID = userID.encode('utf-8')
     userName = "#" + str(message.author.discriminator)
     userName = userName.encode('utf-8')
 
-    print(userID)
-
     # !gamble command
     if message.content.startswith('!gamble'):
         intGamble = 99999999999
-        userbalance = get_balance(userName)
+        userbalance = get_balance(userID)
         await client.send_message(message.channel, "So you think you can beat the LogBot with a measly balance of ?")
 
         # cut message to only gamble value
@@ -108,7 +105,7 @@ async def on_message(message):
             NewUserBalance = userbalance - intGamble
             await client.send_message(message.channel, "Tie goes to the LogBot")
                     
-        update_balance(userName, NewUserBalance)
+        update_balance(userID, NewUserBalance)
             
     # !help command
     elif message.content == '!help':
@@ -117,16 +114,17 @@ async def on_message(message):
     # !balance command
     elif message.content == '!balance':
         print(Members)
-        user_balance = get_balance(userName)
-        await client.send_message(message.channel, 'Your balance is ')
+        user_balance = get_balance(userID)
+        await client.send_message(message.channel, user_balance)
 
         # Chirp Chirp
-        if user_balance < 1000:
+        intuser_balance = int(user_balance)
+        if intuser_balance < 1000:
             await client.send_message(message.channel, 'You gotta pump those numbers up, those are rookie numbers!')
             
     elif message.content == '!balanceall':
         all_user_balance = get_balance_all()
-        await client.send_message(message.channel, '')
+        await client.send_message(message.channel, all_user_balance)
 
 @client.event
 async def on_ready():
