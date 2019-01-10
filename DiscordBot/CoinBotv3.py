@@ -41,8 +41,6 @@ def gamble(user, gambleamount):
 @client.event
 async def on_message(message):
 
-    #check_time()
-
     if message.author == client.user:
         return
 
@@ -119,6 +117,13 @@ async def on_message(message):
         await client.send_message(message.channel, all_user_balance)
 
 @client.event
+async def wait_until_ready():
+    print('ready')
+
+
+
+
+@client.event
 async def on_ready():
     print('Logged in as')
     print(client.user.name)
@@ -128,15 +133,17 @@ async def on_ready():
     # create array of server members
     for member in client.get_all_members():
         str_member = str(member)
-        
+
         # add member if they are new
         if str_member not in Members:
             add_member(str_member)
 
 def check_time():
+
     # check current time
     currtime = time.time()
     global pasttime
+
     # update balance every X seconds
     delay = 5
         
@@ -145,25 +152,32 @@ def check_time():
         
     # update balance for online member
     if pasttime <= timediff:
+        print('here')
         # reset memory time
         pasttime = time.time()
                 
         # create array of online members
         for member in client.get_all_members():
+            print('here1')
         
             # add member if they are new
             if member not in Members:
+                print('here2')
                 add_member(member)
             
             # if member is online give them +1 coin
             if str(member.status) == 'online':
+
+                print('here3')
             
                 currbalance = get_balance(member)
                 currbalance = currbalance + 1 
                 #make sure member is str
                 update_balance(member, currbalance)
 
-   
+
+#add a command that makes fun of whatever game soup starts playing client.member.game
+
 if __name__ == "__main__":
     # discordToken is the value you get when creating the bot
     discordToken = 'NTI2MDk0MzY5MjYzMTkwMDQx.DxbtFQ.E9rkdlsiKxcrKyDMsA9m2vF-AuQ' ##//Input your DiscordToken here
