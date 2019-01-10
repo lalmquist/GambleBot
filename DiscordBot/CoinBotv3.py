@@ -5,8 +5,6 @@ import discord
 import asyncio
 from discord.utils import get
 
-# This value can be retrieved by right clicking on server channel
-
 serverID = ""  # INPUT YOUR SERVERID HERE (unused)
 client = discord.Client()
 
@@ -17,15 +15,13 @@ with open('Members.json') as f:
     Members = json.load(f)
 
 def get_balance(user):
-    lol = str(user)
-    abcd = Members[lol]
-    strabcd = str(abcd)
-    return strabcd
+    intBalance = Members[user]
+    strBalance = str(intBalance)
+    return strBalance
 
 
 def update_balance(user, newBal):
-    struser = str(user)
-    Members[struser] = newBal
+    Members[user] = newBal
     with open('Members.json', 'w') as outfile:
         json.dump(Members, outfile)
 
@@ -35,11 +31,9 @@ def get_balance_all():
 
 
 def add_member(user):
-    struserr = str(user)
-    if user not in Members:
-        Members[struserr] = 0
-        with open('Members.json', 'w') as outfile:
-            json.dump(Members, outfile)
+    Members[user] = 0
+    with open('Members.json', 'w') as outfile:
+        json.dump(Members, outfile)
 
 def gamble(user, gambleamount):
     return
@@ -52,16 +46,14 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    userID = message.author
-    #userID = userID.encode('utf-8')
-    userName = "#" + str(message.author.discriminator)
-    userName = userName.encode('utf-8')
+    userID = str(message.author)
 
     # !gamble command
     if message.content.startswith('!gamble'):
-        intGamble = 99999999999
+
         userbalance = get_balance(userID)
-        await client.send_message(message.channel, "So you think you can beat the LogBot with a measly balance of ?")
+        intUserBalance = int(userbalance)
+        await client.send_message(message.channel, "So you think you can beat the LogBot with a measly balance of " + str(userbalance) + "?")
 
         # cut message to only gamble value
         gamblemessage = message.content
@@ -70,17 +62,17 @@ async def on_message(message):
         try:
             intGamble = int(gambleamount)
         except:
-            await client.send_message(message.channel, "Type !help for commands.  Need to enter gamble value")
+            await client.send_message(message.channel, "Type !help for commands.  Need to enter gamble value.")
+            return
                     
         if gambleamount == '':
-            await client.send_message(message.channel, "Type !help for commands.  Need to enter gamble value")
+            await client.send_message(message.channel, "Type !help for commands.  Need to enter gamble value.")
+            return
                             
         time.sleep(1)
                     
-        if intGamble > userbalance:
-            await client.send_message(message.channel, "You're too poor to make this bet")
-            return
-        elif intGamble == 99999999999:
+        if intGamble > intUserBalance:
+            await client.send_message(message.channel, "You're too poor to make this bet.")
             return
 
         # for now, hardcode roll to 100
@@ -88,21 +80,21 @@ async def on_message(message):
         userroll = random.randint(0, rollsize)
         botroll = random.randint(0, rollsize)
                     
-        await client.send_message(message.channel, "Your roll: , LogBot roll: ")
+        await client.send_message(message.channel, "Your roll: " + str(userroll) + "\nLogBot roll: " + str(botroll))
                     
         # Win
         if botroll > userroll:
-            NewUserBalance = userbalance - intGamble
+            NewUserBalance = intUserBalance - intGamble
             await client.send_message(message.channel, "You lose loser")
                     
         # Lose
         elif botroll < userroll:
-            NewUserBalance = userbalance + intGamble
+            NewUserBalance = intUserBalance + intGamble
             await client.send_message(message.channel, "Winner winner chickenSoup dinner!")
                     
         # Tie-Lose
         elif botroll == userroll:
-            NewUserBalance = userbalance - intGamble
+            NewUserBalance = intUserBalance - intGamble
             await client.send_message(message.channel, "Tie goes to the LogBot")
                     
         update_balance(userID, NewUserBalance)
@@ -113,15 +105,15 @@ async def on_message(message):
 
     # !balance command
     elif message.content == '!balance':
-        print(Members)
         user_balance = get_balance(userID)
-        await client.send_message(message.channel, user_balance)
+        await client.send_message(message.channel, "Your balance is: " + str(user_balance))
 
         # Chirp Chirp
         intuser_balance = int(user_balance)
-        if intuser_balance < 1000:
+        if intuser_balance < 60:
             await client.send_message(message.channel, 'You gotta pump those numbers up, those are rookie numbers!')
-            
+
+    #make this easier to read        
     elif message.content == '!balanceall':
         all_user_balance = get_balance_all()
         await client.send_message(message.channel, all_user_balance)
@@ -132,11 +124,14 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('------')
-    # create array of online members
+
+    # create array of server members
     for member in client.get_all_members():
+        str_member = str(member)
+        
         # add member if they are new
-        if member not in Members:
-            add_member(member)
+        if str_member not in Members:
+            add_member(str_member)
 
 def check_time():
     # check current time
@@ -165,6 +160,7 @@ def check_time():
             
                 currbalance = get_balance(member)
                 currbalance = currbalance + 1 
+                #make sure member is str
                 update_balance(member, currbalance)
 
    
