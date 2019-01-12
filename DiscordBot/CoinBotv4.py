@@ -35,9 +35,6 @@ def add_member(user):
     Members[user] = 0
     with open('Members.json', 'w') as outfile:
         json.dump(Members, outfile)
-
-def gamble(user, gambleamount):
-    return
     
 @client.event
 async def on_message(message):
@@ -132,69 +129,46 @@ async def on_ready():
         if str_member not in Members:
             add_member(str_member)
 
-async def async_foo():
-    print("async_foo started")
-    await asyncio.sleep(1)
-    print("async_foo done")
 
-
-async def main():
-    asyncio.ensure_future(async_foo())  # fire and forget async_foo()
-
-    # btw, you can also create tasks inside non-async funcs
-    
-    print('Do some actions 1')
-    await asyncio.sleep(1)
-    print('Do some actions 2')
-    await asyncio.sleep(1)
-    print('Do some actions 3')
-
-
-
-def check_time():
+@client.event
+#async def on_member_update(before,after):
+async def on_typing(channel, user, when):
 
     # check current time
     currtime = time.time()
+
     global pasttime
 
-    # update balance every X seconds
-    delay = 5
-        
-    # calculate when to update
-    timediff = currtime - delay
-        
-    # update balance for online member
-    if pasttime <= timediff:
-        print('here')
-        # reset memory time
-        pasttime = time.time()
-                
-        # create array of online members
-        for member in client.get_all_members():
-            print('here1')
-        
-            # add member if they are new
-            if member not in Members:
-                print('here2')
-                add_member(member)
-            
-            # if member is online give them +1 coin
-            if str(member.status) == 'online':
+    delay = currtime - pasttime
 
-                print('here3')
-            
-                currbalance = get_balance(member)
-                currbalance = currbalance + 1 
-                #make sure member is str
-                update_balance(member, currbalance)
+    delaymin = delay/1
 
+    intdelaymin = int(delaymin)
+
+    for member in client.get_all_members():
+        str_member = str(member)
+        # add member if they are new
+        if str_member not in Members:
+            add_member(str_member)
+            
+        # if member is online give them points
+        if str(member.status) == 'online':
+            
+            currbalance = get_balance(str_member)
+            print(currbalance)
+            intcurr_balance = int(currbalance)
+            intcurr_balance = intcurr_balance + intdelaymin
+
+            print(intcurr_balance)
+
+            #make sure member is str
+            update_balance(str_member, intcurr_balance)
+            pasttime = time.time()
 
 #add a command that makes fun of whatever game soup starts playing client.member.game
 
 if __name__ == "__main__":
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
     # discordToken is the value you get when creating the bot
     discordToken = 'NTI2MDk0MzY5MjYzMTkwMDQx.DxbtFQ.E9rkdlsiKxcrKyDMsA9m2vF-AuQ' ##//Input your DiscordToken here
     client.run(discordToken)
