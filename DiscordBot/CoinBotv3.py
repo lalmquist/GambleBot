@@ -156,25 +156,20 @@ class MyCog(object):
     
     async def do_stuff(self):
         for member in client.get_all_members():
-            print('here1')
-        
-            for member in client.get_all_members():
-                str_member = str(member)
-                # add member if they are new
-                if str_member not in Members:
-                    add_member(str_member)
+            str_member = str(member)
+            # add member if they are new
+            if str_member not in Members:
+                add_member(str_member)
                 
-                # if member is online give them points
-                if str(member.status) == 'online':
-                    currbalance = get_balance(str_member)
-                    print(currbalance)
-                    intcurr_balance = int(currbalance)
-                    intcurr_balance = intcurr_balance + 1
-                    print(intcurr_balance)
-                    
-                    #make sure member is str
-                    update_balance(str_member, intcurr_balance)
-                    pasttime = time.time()
+            # if member is online give them points
+            if str(member.status) == 'online':
+                currbalance = get_balance(str_member)
+
+                intcurr_balance = int(currbalance)
+                intcurr_balance = intcurr_balance + 1
+
+                #make sure member is str
+                update_balance(str_member, intcurr_balance)
 
         
     async def looping_function(self):
