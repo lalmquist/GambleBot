@@ -198,5 +198,5 @@ Banker(loop)
 if __name__ == "__main__":
 
     # discordToken is the value you get when creating the bot
-    discordToken = 'go away' ##//Input your DiscordToken here
+    discordToken = '' ##//Input your DiscordToken here
     client.run(discordToken)
