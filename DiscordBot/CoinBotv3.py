@@ -132,69 +132,76 @@ async def on_ready():
         if str_member not in Members:
             add_member(str_member)
 
-async def async_foo():
-    print("async_foo started")
-    await asyncio.sleep(1)
-    print("async_foo done")
-
-
-async def main():
-    asyncio.ensure_future(async_foo())  # fire and forget async_foo()
-
-    # btw, you can also create tasks inside non-async funcs
+class MyCog(object):
+    def __init__(self,bot):
+        self.bot = bot
+        
+        # AsyncioEventLoop.create_task is a function that begins execution of a coroutine and
+        # returns a coroutine object instantly. With a reference to this coroutine object
+        # we can check if the coroutine is done, errored, or cancel it ourselves.
+        self.looped_task = bot.create_task(self.looping_function())
+        
+        self.data = {}
+        
+    def __unload(self):
+        # This is a special function that discord.py calls when a cog is unloaded.
+        # Basically a cog unload event handler.
+        
+        # Technically this isn't necessary because the looping_function *should* exit cleanly,
+        # but better safe than sorry.
+        try:
+            self.looped_task.cancel()
+        except (AttributeError, asyncio.CancelledError):
+            pass
     
-    print('Do some actions 1')
-    await asyncio.sleep(1)
-    print('Do some actions 2')
-    await asyncio.sleep(1)
-    print('Do some actions 3')
-
-
-
-def check_time():
-
-    # check current time
-    currtime = time.time()
-    global pasttime
-
-    # update balance every X seconds
-    delay = 5
-        
-    # calculate when to update
-    timediff = currtime - delay
-        
-    # update balance for online member
-    if pasttime <= timediff:
-        print('here')
-        # reset memory time
-        pasttime = time.time()
-                
-        # create array of online members
+    async def do_stuff(self):
         for member in client.get_all_members():
             print('here1')
         
-            # add member if they are new
-            if member not in Members:
-                print('here2')
-                add_member(member)
-            
-            # if member is online give them +1 coin
-            if str(member.status) == 'online':
+            for member in client.get_all_members():
+                str_member = str(member)
+                # add member if they are new
+                if str_member not in Members:
+                    add_member(str_member)
+                
+                # if member is online give them points
+                if str(member.status) == 'online':
+                    currbalance = get_balance(str_member)
+                    print(currbalance)
+                    intcurr_balance = int(currbalance)
+                    intcurr_balance = intcurr_balance + 1
+                    print(intcurr_balance)
+                    
+                    #make sure member is str
+                    update_balance(str_member, intcurr_balance)
+                    pasttime = time.time()
 
-                print('here3')
-            
-                currbalance = get_balance(member)
-                currbalance = currbalance + 1 
-                #make sure member is str
-                update_balance(member, currbalance)
+        
+    async def looping_function(self):
+        # The "is" keyword here checks if two objects are found at the same memory location.
+        # So this loop will run for the duration that this cog/plugin is loaded.
+        # If the bot shuts down, this function exits cleanly.
+        # If the cog is reloaded, this function exits cleanly and start again with the new cog code.
+        while True:
+            await self.do_stuff()
 
+            # This sleep here is extremely important no matter how short you want your loop interval to be.
+            # asyncio can only switch coroutine execution (the process that it uses to run functions in "parallel")
+            # when an "await" keyword is found and execution has to pause. Calling "await self.do_stuff()"
+            # won't force switching because no waiting actually occurs.
+
+            # If you forget to add this sleep your bot will become entirely unresponsive since it's dedicating
+            # 100% of it's execution time to running this function. Try it out sometime!
+            await asyncio.sleep(30)
+        
+loop = asyncio.get_event_loop()
+Banker = MyCog
+Banker(loop)
 
 #add a command that makes fun of whatever game soup starts playing client.member.game
 
 if __name__ == "__main__":
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
     # discordToken is the value you get when creating the bot
-    discordToken = 'NTI2MDk0MzY5MjYzMTkwMDQx.DxbtFQ.E9rkdlsiKxcrKyDMsA9m2vF-AuQ' ##//Input your DiscordToken here
+    discordToken = 'go away' ##//Input your DiscordToken here
     client.run(discordToken)
