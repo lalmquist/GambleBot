@@ -12,7 +12,7 @@ client = discord.Client()
 # Start buffer time for delay calculation
 pasttime = time.time()
 
-with open('Members2.json') as f:
+with open('Members.json') as f:
     Members = json.load(f)
 
 def get_balance(user):
@@ -22,16 +22,16 @@ def get_balance(user):
 
 def update_balance(user, newBal):
     Members[user] = newBal
-    with open('Members2.json', 'w') as outfile:
+    with open('Members.json', 'w') as outfile:
         json.dump(Members, outfile)
 
 def get_balance_all():
     return Members
 
 def add_member(user):
-    if user != 'Shitty LogBot#6506':
+    if user != 'LogBot#2779':
         Members[user] = 0
-        with open('Members2.json', 'w') as outfile:
+        with open('Members.json', 'w') as outfile:
             json.dump(Members, outfile)
 
 def dict_print(d):
@@ -63,7 +63,7 @@ async def on_message(message):
 
     if message.author == client.user:
         return
-    if strchannel != "gambling_room":
+    if strchannel != "gambling-room":
         return
 
     userID = str(message.author)
@@ -104,12 +104,12 @@ async def on_message(message):
         # Win
         if botroll > userroll:
             NewUserBalance = intUserBalance - intGamble
-            await client.send_message(message.channel, "You lose!")
+            await client.send_message(message.channel, "You lose loser")
                     
         # Lose
         elif botroll < userroll:
             NewUserBalance = intUserBalance + intGamble
-            await client.send_message(message.channel, "Winner winner chicken dinner!")
+            await client.send_message(message.channel, "Winner winner chickenSoup dinner!")
                     
         # Tie-Lose
         elif botroll == userroll:
@@ -120,7 +120,7 @@ async def on_message(message):
             
     # !help command
     elif message.content == '!help':
-        await client.send_message(message.channel, 'Type "!gamble #" to gamble integer amount of coins.\nType "!guess #" to play the guessing game.\nType "!guessrules" to see guess game rules.\nType "!balance" to see your current balance.\nType "!top10" to see Top10 balances.')
+        await client.send_message(message.channel, 'Type "!gamble #" to gamble integer amount of coins.\nType "!guess #" to play the guessing game.\nType "!guessrules" to see guess game rules.\nType !balance to see your current balance.\nType !balanceall to see all balances')
 
     # !balance command
     elif message.content == '!balance':
@@ -131,21 +131,22 @@ async def on_message(message):
         intuser_balance = int(user_balance)
         if intuser_balance < 60:
             await client.send_message(message.channel, 'You gotta pump those numbers up, those are rookie numbers!')
-
-    elif message.content == '!guessrules':
-        await client.send_message(message.channel, "LogBot will generate a random number and pick another random number between 0 and the first number.  You will have to guess the number.  If you guess within 50 you don't lose your gamble, if you guess closer you are rewarded based on how close to the target you are.")
-
-    # top 10
-    elif message.content == '!top10':
+    
+    # !balanceall command
+    elif message.content == '!balanceall':
         all_user_balance = get_balance_all()
         newD = {}
         def keyfunction(k):
             return all_user_balance[k]
-        for key in sorted(all_user_balance, key=keyfunction, reverse=True)[:10]:
+        for key in sorted(all_user_balance, key=keyfunction, reverse=True):
             shortkey = key[:-5]
             newD[shortkey] = all_user_balance[key]
 
         await client.send_message(message.channel, dict_print(newD))
+
+    elif message.content == '!guessrules':
+        all_user_balance = get_balance_all()
+        await client.send_message(message.channel, "LogBot will generate a random number and pick another random number between 0 and the first number.  You will have to guess the number.  If you guess within 50 you don't lose your gamble, if you guess closer you are rewarded based on how close to the target you are.")
 
     elif message.content.startswith('!guess'):
 
@@ -167,7 +168,7 @@ async def on_message(message):
             return
 
         intGamble = int(guessgamble)
-        guesslimit = random.randint(50, 300)
+        guesslimit = random.randint(50, 500)
         BotNumber = random.randint(0,guesslimit)
         await client.send_message(message.channel, "I'm thinking of a number between 0 and " + str(guesslimit) + "\nWhat is your guess?")
         check_results2 = 1
@@ -191,7 +192,7 @@ async def on_message(message):
 
         if guessdiff > 50:
             New_UserBalance = intUserBalance - intGamble
-            await client.send_message(message.channel, "Better luck next time.")
+            await client.send_message(message.channel, "Better luck next time....loser.")
         elif guessdiff == 0:
             New_UserBalance = intUserBalance + intGamble*10
             await client.send_message(message.channel, "You got it! You must be cheating...You're awarded with 10x your bet")
@@ -208,7 +209,7 @@ async def on_message(message):
             New_UserBalance = intUserBalance + intGamble*2
             await client.send_message(message.channel, "Not bad! You're awarded with 2x your bet")
         elif guessdiff <= 50:
-            await client.send_message(message.channel, "I've seen better.  You're awarded with your bet")
+            await client.send_message(message.channel, "I've seen better.  You're awarded with 2x your bet")
             New_UserBalance = intUserBalance + intGamble
 
         update_balance(userID, New_UserBalance)
@@ -253,12 +254,14 @@ class MyCog(object):
     async def do_stuff(self):
         for member in client.get_all_members():
             str_member = str(member)
+
             # add member if they are new
             if str_member not in Members:
                 add_member(str_member)
-            if str_member !='Shitty LogBot#6506':    
+            if str_member != 'LogBot#2779':    
                 # if member is online give them points
                 if str(member.status) == 'online':
+
                     currbalance = get_balance(str_member)
 
                     intcurr_balance = int(currbalance)
@@ -292,5 +295,5 @@ Banker(loop)
 if __name__ == "__main__":
 
     # discordToken is the value you get when creating the bot
-    discordToken = 'NTM0NTU1MTg1NTkxMjIyMjky.Dx7T8g.s4vtqqUcZFVHEBYMa-C13jK4XX4' ##//Input your DiscordToken here
+    discordToken = 'NTM0MDQ2MjcyMzM2ODIyMjky.Dxz49w.p5mzt0hRVGMkMYC55ZNFYZOLk28' ##//Input your DiscordToken here
     client.run(discordToken)
