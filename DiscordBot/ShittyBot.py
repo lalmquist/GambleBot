@@ -256,16 +256,16 @@ class MyCog(object):
             # add member if they are new
             if str_member not in Members:
                 add_member(str_member)
-                
-            # if member is online give them points
-            if str(member.status) == 'online':
-                currbalance = get_balance(str_member)
+            if str_member !='Shitty LogBot#6506':    
+                # if member is online give them points
+                if str(member.status) == 'online':
+                    currbalance = get_balance(str_member)
 
-                intcurr_balance = int(currbalance)
-                intcurr_balance = intcurr_balance + 1
+                    intcurr_balance = int(currbalance)
+                    intcurr_balance = intcurr_balance + 1
 
-                #make sure member is str
-                update_balance(str_member, intcurr_balance)
+                    #make sure member is str
+                    update_balance(str_member, intcurr_balance)
 
         
     async def looping_function(self):
@@ -292,5 +292,5 @@ Banker(loop)
 if __name__ == "__main__":
 
     # discordToken is the value you get when creating the bot
-    discordToken = '' ##//Input your DiscordToken here
+    discordToken = 'NTM0NTU1MTg1NTkxMjIyMjky.Dx7T8g.s4vtqqUcZFVHEBYMa-C13jK4XX4' ##//Input your DiscordToken here
     client.run(discordToken)
