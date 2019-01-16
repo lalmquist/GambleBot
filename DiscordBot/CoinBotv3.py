@@ -183,7 +183,7 @@ async def on_message(message):
             UserGuess = msg.content
             check_results2 = check_gamble_amount(userID, UserGuess)
             if check_results2 == 1:
-                await client.send_message(message.channel, "Type !help for commands.  Need to enter gamble value.")
+                await client.send_message(message.channel, "Type !help for commands.  Need to enter guess value.")
             
         intUserGuess = int(UserGuess)
         guessdiff = abs(intUserGuess-BotNumber)
