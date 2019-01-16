@@ -29,9 +29,10 @@ def get_balance_all():
     return Members
 
 def add_member(user):
-    Members[user] = 0
-    with open('Members.json', 'w') as outfile:
-        json.dump(Members, outfile)
+    if user != 'LogBot#2779':
+        Members[user] = 0
+        with open('Members.json', 'w') as outfile:
+            json.dump(Members, outfile)
 
 def dict_print(d):
     string = ''
@@ -58,7 +59,11 @@ def check_gamble_amount(user, gamount):
 @client.event
 async def on_message(message):
 
+    strchannel = str(message.channel)
+
     if message.author == client.user:
+        return
+    if strchannel != "gambling-room":
         return
 
     userID = str(message.author)
@@ -126,10 +131,18 @@ async def on_message(message):
         intuser_balance = int(user_balance)
         if intuser_balance < 60:
             await client.send_message(message.channel, 'You gotta pump those numbers up, those are rookie numbers!')
-       
+    
+    # !balanceall command
     elif message.content == '!balanceall':
         all_user_balance = get_balance_all()
-        await client.send_message(message.channel, dict_print(all_user_balance))
+        newD = {}
+        def keyfunction(k):
+            return all_user_balance[k]
+        for key in sorted(all_user_balance, key=keyfunction, reverse=True):
+            shortkey = key[:-5]
+            newD[shortkey] = all_user_balance[key]
+
+        await client.send_message(message.channel, dict_print(newD))
 
     elif message.content == '!guessrules':
         all_user_balance = get_balance_all()

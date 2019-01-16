@@ -29,9 +29,10 @@ def get_balance_all():
     return Members
 
 def add_member(user):
-    Members[user] = 0
-    with open('Members2.json', 'w') as outfile:
-        json.dump(Members, outfile)
+    if user != 'Shitty LogBot#6506':
+        Members[user] = 0
+        with open('Members2.json', 'w') as outfile:
+            json.dump(Members, outfile)
 
 def dict_print(d):
     string = ''
@@ -63,9 +64,6 @@ async def on_message(message):
     if message.author == client.user:
         return
     if strchannel != "gambling_room":
-        print(message.channel)
-        print(strchannel)
-        print('here')
         return
 
     userID = str(message.author)
@@ -136,6 +134,18 @@ async def on_message(message):
 
     elif message.content == '!guessrules':
         await client.send_message(message.channel, "LogBot will generate a random number and pick another random number between 0 and the first number.  You will have to guess the number.  If you guess within 50 you don't lose your gamble, if you guess closer you are rewarded based on how close to the target you are.")
+
+    # top 10
+    elif message.content == '!top10':
+        all_user_balance = get_balance_all()
+        newD = {}
+        def keyfunction(k):
+            return all_user_balance[k]
+        for key in sorted(all_user_balance, key=keyfunction, reverse=True)[:10]:
+            shortkey = key[:-5]
+            newD[shortkey] = all_user_balance[key]
+
+        await client.send_message(message.channel, dict_print(newD))
 
     elif message.content.startswith('!guess'):
 
