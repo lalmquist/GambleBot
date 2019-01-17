@@ -168,7 +168,7 @@ async def on_message(message):
             return
 
         intGamble = int(guessgamble)
-        guesslimit = random.randint(50, 500)
+        guesslimit = random.randint(50, 300)
         BotNumber = random.randint(0,guesslimit)
         await client.send_message(message.channel, "I'm thinking of a number between 0 and " + str(guesslimit) + "\nWhat is your guess?")
         check_results2 = 1
@@ -209,7 +209,7 @@ async def on_message(message):
             New_UserBalance = intUserBalance + intGamble*2
             await client.send_message(message.channel, "Not bad! You're awarded with 2x your bet")
         elif guessdiff <= 50:
-            await client.send_message(message.channel, "I've seen better.  You're awarded with 2x your bet")
+            await client.send_message(message.channel, "I've seen better.  You're awarded with your bet")
             New_UserBalance = intUserBalance + intGamble
 
         update_balance(userID, New_UserBalance)
