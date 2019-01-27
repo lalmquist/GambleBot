@@ -71,7 +71,7 @@ async def on_message(message):
     
     if message.author == client.user:
         return
-    if strchannel != "api-testing":
+    if strchannel != "gambling-room":
         return
     
     userID = str(message.author)
