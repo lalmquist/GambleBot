@@ -55,7 +55,15 @@ def check_gamble_amount(user, gamount):
         return 2
     else:
         return 0
-    
+
+def check_user(user):
+    try:
+        test = Members[user]
+        return True
+    except:
+        return False
+
+
 @client.event
 async def on_message(message):
 
@@ -71,6 +79,165 @@ async def on_message(message):
     userbalance = get_balance(userID)
     intUserBalance = int(userbalance)
     gamblemessage = message.content
+
+    # !gamble command multiple
+    if message.content.startswith('!duel'):
+    
+        messagestr = str(message.content)
+        messagesplit = messagestr.split()
+        OpponentID = 'rando'
+        OppAccept = 0
+
+        # cut message to only gamble value
+        try:
+            duelgamble = messagesplit[2]
+            opponent = messagesplit[1]
+        except:
+            await client.send_message(message.channel, 'Type "!Duel @OpponentName GambleAmount".')
+
+        opp = idDict[opponent]
+        OpponentID = str(opp)
+
+        if OpponentID == str(message.author):
+            await client.send_message(message.channel, "You can't duel yourself.")
+            return
+
+        if check_user(OpponentID) == False:
+            await client.send_message(message.channel, "Member does not exist.")
+            return
+            
+        check_results_you = check_gamble_amount(userID, duelgamble)
+        
+        #invalid entry
+        if check_results_you == 1:
+            await client.send_message(message.channel, "Type !help for commands.  Need to in format '!duel @user #'.")
+            return
+        
+        #balance too low
+        elif check_results_you == 2:
+            userb = get_balance(str(message.author))
+            await client.send_message(message.channel, "You're too poor to make this bet. Your balance is " + str(userb))
+            return
+        
+        check_results_other = check_gamble_amount(OpponentID, duelgamble)
+
+        #balance too low
+        if check_results_other == 2:
+            oppb = get_balance(str(OpponentID))
+            await client.send_message(message.channel, "Your opponent is too poor to make this bet. " + str(OpponentID) + " balance is " + str(oppb))
+            return
+
+        await client.send_message(message.channel, opponent + " do you accept? Type 'Accept' or 'Decline'.")
+        
+        while OppAccept == 0:
+            OppResponse = await client.wait_for_message(timeout=30)
+            if OppResponse == None:
+                await client.send_message(message.channel, "Opponent didn't respond in time.")
+                return
+            StrResponse = str(OppResponse.content)
+            StrAuthor = str(OppResponse.author)
+            if (StrResponse == 'Accept' or StrResponse == 'accept') and StrAuthor == OpponentID:
+                OppAccept = 1
+                pass
+            elif StrAuthor == OpponentID:
+                await client.send_message(message.channel, "Opponent declined.")
+                return
+        
+        oppbalance = get_balance(OpponentID)
+        intOppBalance = int(oppbalance)
+        
+        intGamble = int(duelgamble)
+        guesslimit = random.randint(10, 100)
+        BotNumber = random.randint(0,guesslimit)
+        await client.send_message(message.channel, "I'm thinking of a number between 0 and " + str(guesslimit) + "\nWhat is your guess?")
+        check_guess1 = 1
+        check_guess2 = 1
+        GuessesReceived = 0
+        UserGuessReceived = 0
+        OppGuessReceived = 0
+        loops = 0
+        
+        while GuessesReceived == 0 and loops < 1:
+            while (check_guess1 == 1) or (check_guess2 == 1):
+
+                if UserGuessReceived == 1 and OppGuessReceived == 1:
+                    GuessesReceived = 1
+
+                msg = await client.wait_for_message(timeout=60)
+                if msg == None:
+                    if UserGuessReceived == 0:
+                        New_UserBalance = intUserBalance - intGamble
+                        update_balance(userID, New_UserBalance)
+                
+                    if OppGuessReceived == 0:
+                        New_OppBalance = intOppBalance - intGamble
+                        update_balance(OpponentID, New_OppBalance)
+                    
+                        await client.send_message(message.channel, "Too slow, you lose your gamble")
+                        return
+
+                if str(msg.author) == str(userID) and UserGuessReceived == 0:
+                    UserGuess = msg.content
+                    check_guess1 = check_gamble_amount(userID, UserGuess)
+                    if check_guess1 == 1:
+                        await client.send_message(message.channel, "Type !help for commands.  Need to enter guess value.")
+                    else:
+                        UserGuessReceived = 1
+                
+                if str(msg.author) == str(OpponentID) and OppGuessReceived == 0:
+                    OppGuess = msg.content
+                    check_guess2 = check_gamble_amount(OpponentID, OppGuess)
+                    if check_guess2 == 1:
+                        await client.send_message(message.channel, "Type !help for commands.  Need to enter guess value.")
+                    else:
+                        OppGuessReceived = 1
+                loops = loops + 1
+        
+        intOppGuess = int(OppGuess)
+        opponent_guessdiff = abs(intOppGuess-BotNumber)
+        intUserGuess = int(UserGuess)
+        user_guessdiff = abs(intUserGuess-BotNumber)
+        
+        await client.send_message(message.channel, "LogBot secret number: " + str(BotNumber))
+        
+        if user_guessdiff and opponent_guessdiff == 0:
+            #holy moly give everybody a milly
+            New_UserBalance = intUserBalance + intGamble*1000
+            New_OppBalance = intOppBalance + intGamble*1000
+            await client.send_message(message.channel, "You both guessed the secret number!, You're rich bitch!!!!!")
+        
+        if user_guessdiff == 0:
+            #user win a bunch
+            New_UserBalance = intUserBalance + intGamble*100
+            New_OppBalance = intOppBalance - intGamble
+            await client.send_message(message.channel, userID[:-5] + " guessed the secret number!")
+        
+        if opponent_guessdiff == 0:
+            #opponent win a bunch
+            New_UserBalance = intUserBalance - intGamble
+            New_OppBalance = intOppBalance + intGamble*100
+            await client.send_message(message.channel, OpponentID[:-5] + " wins!")
+        
+        if opponent_guessdiff < user_guessdiff:
+            # opponent wins
+            New_UserBalance = intUserBalance - intGamble
+            New_OppBalance = intOppBalance + intGamble
+            await client.send_message(message.channel, OpponentID[:-5] + " wins!")
+        
+        elif opponent_guessdiff == user_guessdiff:
+            # tie goes to opponent
+            New_UserBalance = intUserBalance - intGamble
+            New_OppBalance = intOppBalance + intGamble
+            await client.send_message(message.channel, "Tie goes to " + OpponentID[:-5] + " because " + userID[:-5] + " initiated.")
+        
+        else:
+            # initializer wins
+            New_UserBalance = intUserBalance + intGamble
+            New_OppBalance = intOppBalance - intGamble
+            await client.send_message(message.channel, userID[:-5] + " wins!")
+        
+        update_balance(userID, New_UserBalance)
+        update_balance(OpponentID, New_OppBalance)
 
     # !gamble command
     if message.content.startswith('!gamble'):
@@ -212,6 +379,7 @@ async def on_message(message):
             New_UserBalance = intUserBalance + intGamble
 
         update_balance(userID, New_UserBalance)
+idDict = {}
 
 @client.event
 async def on_ready():
@@ -223,6 +391,7 @@ async def on_ready():
     # create array of server members
     for member in client.get_all_members():
         str_member = str(member)
+        idDict['<@' + str(member.id) + '>'] = str_member
 
         # add member if they are new
         if str_member not in Members:
@@ -231,20 +400,10 @@ async def on_ready():
 class MyCog(object):
     def __init__(self,bot):
         self.bot = bot
-        
-        # AsyncioEventLoop.create_task is a function that begins execution of a coroutine and
-        # returns a coroutine object instantly. With a reference to this coroutine object
-        # we can check if the coroutine is done, errored, or cancel it ourselves.
         self.looped_task = bot.create_task(self.looping_function())
-        
         self.data = {}
         
     def __unload(self):
-        # This is a special function that discord.py calls when a cog is unloaded.
-        # Basically a cog unload event handler.
-        
-        # Technically this isn't necessary because the looping_function *should* exit cleanly,
-        # but better safe than sorry.
         try:
             self.looped_task.cancel()
         except (AttributeError, asyncio.CancelledError):
@@ -253,12 +412,15 @@ class MyCog(object):
     async def do_stuff(self):
         for member in client.get_all_members():
             str_member = str(member)
+            idDict['<@' + str(member.id) + '>'] = str_member
+
             # add member if they are new
             if str_member not in Members:
                 add_member(str_member)
-            if str_member !='Shitty LogBot#6506':    
+            if str_member !='Shitty LogBot#6506' and str_member != 'Rythm#3722':    
                 # if member is online give them points
                 if str(member.status) == 'online':
+
                     currbalance = get_balance(str_member)
 
                     intcurr_balance = int(currbalance)
@@ -269,20 +431,8 @@ class MyCog(object):
 
         
     async def looping_function(self):
-        # The "is" keyword here checks if two objects are found at the same memory location.
-        # So this loop will run for the duration that this cog/plugin is loaded.
-        # If the bot shuts down, this function exits cleanly.
-        # If the cog is reloaded, this function exits cleanly and start again with the new cog code.
         while True:
             await self.do_stuff()
-
-            # This sleep here is extremely important no matter how short you want your loop interval to be.
-            # asyncio can only switch coroutine execution (the process that it uses to run functions in "parallel")
-            # when an "await" keyword is found and execution has to pause. Calling "await self.do_stuff()"
-            # won't force switching because no waiting actually occurs.
-
-            # If you forget to add this sleep your bot will become entirely unresponsive since it's dedicating
-            # 100% of it's execution time to running this function. Try it out sometime!
             await asyncio.sleep(30)
         
 loop = asyncio.get_event_loop()
