@@ -69,7 +69,7 @@ async def on_message(message):
 
     strchannel = str(message.channel)
 
-    if message.author == client.user:
+    if (message.author == client.user) or (str(message.author) == 'Rythm#3722'):
         return
     if strchannel != "gambling_room":
         return
