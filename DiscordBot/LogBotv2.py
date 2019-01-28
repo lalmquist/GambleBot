@@ -124,7 +124,7 @@ async def on_message(message):
         #balance too low
         if check_results_other == 2:
             oppb = get_balance(str(OpponentID))
-            await client.send_message(message.channel, "Your opponent is too poor to make this bet. " + str(OpponentID) + " balance is " + str(oppb))
+            await client.send_message(message.channel, "Your opponent is too poor to make this bet. " + OpponentID[:-5] + " balance is " + str(oppb))
             return
 
         await client.send_message(message.channel, opponent + " do you accept? Type 'Accept' or 'Decline'.")
