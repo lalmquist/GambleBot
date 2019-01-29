@@ -440,7 +440,10 @@ Banker = MyCog
 Banker(loop)
 
 if __name__ == "__main__":
+    
+    f=open("token.txt","r")
+    if f.mode == 'r':
+        discordToken = f.read()
 
     # discordToken is the value you get when creating the bot
-    discordToken = '' ##//Input your DiscordToken here
     client.run(discordToken)
