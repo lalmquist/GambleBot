@@ -255,8 +255,8 @@ async def on_message(message):
 
         #balance too low
         elif check_results == 2:
-
-            await client.send_message(message.channel, "You're too poor to make this bet.")
+            userbal = get_balance(userID)
+            await client.send_message(message.channel, "You're too poor to make this bet. Your balance is " + str(userbal))
             return
 
         intGamble = int(gambleamount)
