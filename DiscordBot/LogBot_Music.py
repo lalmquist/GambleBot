@@ -70,10 +70,12 @@ async def on_message(message):
 
     if message.content.startswith('$play'):
         playbal = get_balance(message.author)
+        print(playbal)
         if int(playbal) < 100:
             await client.send_message(message.channel, "$skip")
             await client.send_message(message.channel, "You're too poor to play a song.  Song play requires 100 points. Your balance is " + str(playbal))
-        update_balance(message.author,int(playbal-100))
+        newplaybal = int(playbal) - 100
+        update_balance(message.author, newplaybal)
         
     if strchannel != "gambling-room":
         return
