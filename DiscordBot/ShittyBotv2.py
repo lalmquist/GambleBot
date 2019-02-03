@@ -6,11 +6,7 @@ import discord
 import asyncio
 from discord.utils import get
 
-serverID = ""  # INPUT YOUR SERVERID HERE (unused)
 client = discord.Client()
-
-# Start buffer time for delay calculation
-pasttime = time.time()
 
 with open('Members2.json') as f:
     Members = json.load(f)

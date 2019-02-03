@@ -70,13 +70,24 @@ async def on_message(message):
 
     if message.content.startswith('$play'):
         playbal = get_balance(str(message.author))
-        print(playbal)
         if int(playbal) < 100:
             await client.send_message(message.channel, "$skip")
             await client.send_message(message.channel, "You're too poor to play a song.  Song play requires 100 points. Your balance is " + str(playbal))
+            return
         newplaybal = int(playbal) - 100
-        await client.send_message(message.channel, "Playing song." + str(message.author) + "has been charged 100 points.")
+        await client.send_message(message.channel, "Playing song. " + str(message.author)[:-5] + " has been charged 100 points.")
+        playMemory = message.content
         update_balance(str(message.author), newplaybal)
+        
+    if message.content == '$skip':
+        skipbal = get_balance(str(message.author))
+        if int(skipbal) < 200:
+            await client.send_message(message.channel, "You're too poor to skip a song.  Skip song requires 200 points. Your balance is " + str(skipbal))
+            await client.send_message(message.channel, playMemory)
+            return
+        newskipbal = int(skipbal) - 200
+        await client.send_message(message.channel, "Skipping song. " + str(message.author)[:-5] + " has been charged 200 points.")
+        update_balance(str(message.author), newskipbal)
         
     if strchannel != "gambling-room":
         return
