@@ -11,8 +11,16 @@ client = discord.Client()
 with open('Members.json') as f:
     Members = json.load(f)
 
+with open('GambleHistory.json') as f:
+    GambleHistory = json.load(f)
+
 def get_balance(user):
     intBalance = Members[user]
+    strBalance = str(intBalance)
+    return strBalance
+
+def get_gamble_history(user):
+    intBalance = GambleHistory[user]
     strBalance = str(intBalance)
     return strBalance
 
@@ -21,11 +29,16 @@ def update_balance(user, newBal):
     with open('Members.json', 'w') as outfile:
         json.dump(Members, outfile)
 
+def update_gamble_history(user, newBal):
+    GambleHistory[user] = newBal
+    with open('GambleHistory.json', 'w') as outfile:
+        json.dump(GambleHistory, outfile)
+
 def get_balance_all():
     return Members
 
 def add_member(user):
-    if user != 'LogBot#2779' and user != 'Rythm#3722':
+    if user != 'LogBot#2779' and user != 'Rythm#3722' and user != 'BuckBot#0937':
         Members[user] = 0
         with open('Members.json', 'w') as outfile:
             json.dump(Members, outfile)
@@ -65,35 +78,37 @@ async def on_message(message):
 
     strchannel = str(message.channel)
     
-    if (message.author == client.user) or (str(message.author) == 'Rythm#3722'):
+    if (message.author == client.user) or (str(message.author) == 'Rythm#3722') or (str(message.author) == 'BuckBot#0937'):
         return
 
-    if message.content.startswith('$play'):
-        playbal = get_balance(str(message.author))
-        if int(playbal) < 100:
-            await client.send_message(message.channel, "$skip")
-            await client.send_message(message.channel, "You're too poor to play a song.  Song play requires 100 points. Your balance is " + str(playbal))
-            return
-        newplaybal = int(playbal) - 100
-        await client.send_message(message.channel, "Playing song. " + str(message.author)[:-5] + " has been charged 100 points.")
-        playMemory = message.content
-        update_balance(str(message.author), newplaybal)
+    #if message.content.startswith('$play'):
+    #    playbal = get_balance(str(message.author))
+    #    if int(playbal) < 100:
+    #       await client.send_message(message.channel, "$skip")
+    #        await client.send_message(message.channel, "You're too poor to play a song.  Song play requires 100 points. Your balance is " + str(playbal))
+    #       return
+    #    newplaybal = int(playbal) - 100
+    #   await client.send_message(message.channel, "Playing song. " + str(message.author)[:-5] + " has been charged 100 points.")
+    #   playMemory = message.content
+    #    update_balance(str(message.author), newplaybal)
         
-    if message.content == '$skip':
-        skipbal = get_balance(str(message.author))
-        if int(skipbal) < 200:
-            await client.send_message(message.channel, "You're too poor to skip a song.  Skip song requires 200 points. Your balance is " + str(skipbal))
-            await client.send_message(message.channel, playMemory)
-            return
-        newskipbal = int(skipbal) - 200
-        await client.send_message(message.channel, "Skipping song. " + str(message.author)[:-5] + " has been charged 200 points.")
-        update_balance(str(message.author), newskipbal)
+    #if message.content == '$skip' or message.content == '$disconnect':
+    #    skipbal = get_balance(str(message.author))
+    #   if int(skipbal) < 200:
+    #        await client.send_message(message.channel, "You're too poor to skip a song.  Skip song requires 200 points. Your balance is " + str(skipbal))
+    #        await client.send_message(message.channel, playMemory)
+    #        return
+    #    newskipbal = int(skipbal) - 200
+    #    await client.send_message(message.channel, "Skipping song. " + str(message.author)[:-5] + " has been charged 200 points.")
+    #    update_balance(str(message.author), newskipbal)
         
     if strchannel != "gambling-room":
         return
     
     userID = str(message.author)
-    
+
+    gHistory_u = get_gamble_history(userID)
+
     userbalance = get_balance(userID)
     intUserBalance = int(userbalance)
     gamblemessage = message.content
@@ -162,6 +177,8 @@ async def on_message(message):
                 return
         
         oppbalance = get_balance(OpponentID)
+        
+        gHistory_o = get_gamble_history(OpponentID)
         intOppBalance = int(oppbalance)
         
         intGamble = int(duelgamble)
@@ -186,10 +203,16 @@ async def on_message(message):
                     if UserGuessReceived == 0:
                         New_UserBalance = intUserBalance - intGamble
                         update_balance(userID, New_UserBalance)
+                        
+                        new_ghist_u = int(gHistory_u) - intGamble
+                        update_gamble_history(userID, new_ghist_u)
                 
                     if OppGuessReceived == 0:
                         New_OppBalance = intOppBalance - intGamble
                         update_balance(OpponentID, New_OppBalance)
+                        
+                        new_ghist_o = int(gHistory_o) - intGamble
+                        update_gamble_history(OpponentID, new_ghist_o)
                     
                         await client.send_message(message.channel, "Too slow, you lose your gamble")
                         return
@@ -215,6 +238,7 @@ async def on_message(message):
         opponent_guessdiff = abs(intOppGuess-BotNumber)
         intUserGuess = int(UserGuess)
         user_guessdiff = abs(intUserGuess-BotNumber)
+
         
         await client.send_message(message.channel, "LogBot secret number: " + str(BotNumber))
         
@@ -222,40 +246,55 @@ async def on_message(message):
             #holy moly give everybody a milly
             New_UserBalance = intUserBalance + intGamble*1000
             New_OppBalance = intOppBalance + intGamble*1000
+            new_ghist_u = int(gHistory_u) + intGamble*1000
+            new_ghist_o = int(gHistory_o) + intGamble*1000
             await client.send_message(message.channel, "You both guessed the secret number!, You're rich bitch!!!!!")
         
         if user_guessdiff == 0:
             #user win a bunch
             New_UserBalance = intUserBalance + intGamble*100
             New_OppBalance = intOppBalance - intGamble
+            new_ghist_u = int(gHistory_u) + intGamble*100
+            new_ghist_o = int(gHistory_o) - intGamble
             await client.send_message(message.channel, userID[:-5] + " guessed the secret number!")
         
         if opponent_guessdiff == 0:
             #opponent win a bunch
             New_UserBalance = intUserBalance - intGamble
             New_OppBalance = intOppBalance + intGamble*100
+            new_ghist_u = int(gHistory_u) - intGamble
+            new_ghist_o = int(gHistory_o) + intGamble*100
             await client.send_message(message.channel, OpponentID[:-5] + " wins!")
         
         if opponent_guessdiff < user_guessdiff:
             # opponent wins
             New_UserBalance = intUserBalance - intGamble
             New_OppBalance = intOppBalance + intGamble
+            new_ghist_u = int(gHistory_u) - intGamble
+            new_ghist_o = int(gHistory_o) + intGamble
             await client.send_message(message.channel, OpponentID[:-5] + " wins!")
         
         elif opponent_guessdiff == user_guessdiff:
             # tie goes to opponent
             New_UserBalance = intUserBalance - intGamble
             New_OppBalance = intOppBalance + intGamble
+            new_ghist_u = int(gHistory_u) - intGamble
+            new_ghist_o = int(gHistory_o) + intGamble
             await client.send_message(message.channel, "Tie goes to " + OpponentID[:-5] + " because " + userID[:-5] + " initiated.")
         
         else:
             # initializer wins
             New_UserBalance = intUserBalance + intGamble
             New_OppBalance = intOppBalance - intGamble
+            new_ghist_u = int(gHistory_u)
+            new_ghist_o = int(gHistory_o) - intGamble
             await client.send_message(message.channel, userID[:-5] + " wins!")
         
         update_balance(userID, New_UserBalance)
         update_balance(OpponentID, New_OppBalance)
+        update_gamble_history(userID, new_ghist_u)
+        update_gamble_history(OpponentID, new_ghist_o)
+        
     
     
     # !gamble command alone
@@ -288,19 +327,23 @@ async def on_message(message):
         # Win
         if botroll > userroll:
             NewUserBalance = intUserBalance - intGamble
+            new_ghist_u = int(gHistory_u) - intGamble
             await client.send_message(message.channel, "You lose loser")
         
         # Lose
         elif botroll < userroll:
             NewUserBalance = intUserBalance + intGamble
+            new_ghist_u = int(gHistory_u) + intGamble
             await client.send_message(message.channel, "Winner winner chickenSoup dinner!")
         
         # Tie-Lose
         elif botroll == userroll:
             NewUserBalance = intUserBalance - intGamble
+            new_ghist_u = int(gHistory_u) - intGamble
             await client.send_message(message.channel, "Tie goes to the LogBot")
         
         update_balance(userID, NewUserBalance)
+        update_gamble_history(userID, new_ghist_u)
     
     # !help command
     elif message.content == '!help':
@@ -360,7 +403,9 @@ async def on_message(message):
             msg = await client.wait_for_message(timeout=30, author=message.author)
             if msg == None:
                 New_UserBalance = intUserBalance - intGamble
+                new_ghist_u = int(gHistory_u) - intGamble
                 update_balance(userID, New_UserBalance)
+                update_gamble_history(userID, new_ghist_u)
                 await client.send_message(message.channel, "Too slow, you lose your gamble")
                 return
             UserGuess = msg.content
@@ -375,27 +420,35 @@ async def on_message(message):
         
         if guessdiff > 50:
             New_UserBalance = intUserBalance - intGamble
+            new_ghist_u = int(gHistory_u) - intGamble
             await client.send_message(message.channel, "Better luck next time....loser.")
         elif guessdiff == 0:
             New_UserBalance = intUserBalance + intGamble*10
+            new_ghist_u = int(gHistory_u) + intGamble*10
             await client.send_message(message.channel, "You got it! You must be cheating...You're awarded with 10x your bet")
         elif guessdiff <= 10:
             New_UserBalance = intUserBalance + intGamble*5
+            new_ghist_u = int(gHistory_u) + intGamble*5
             await client.send_message(message.channel, "Not bad! You're awarded with 5x your bet")
         elif guessdiff <= 20:
             New_UserBalance = intUserBalance + intGamble*4
+            new_ghist_u = int(gHistory_u) + intGamble*4
             await client.send_message(message.channel, "Not bad! You're awarded with 4x your bet")
         elif guessdiff <= 30:
             New_UserBalance = intUserBalance + intGamble*3
+            new_ghist_u = int(gHistory_u) + intGamble*3
             await client.send_message(message.channel, "Not bad! You're awarded with 3x your bet")
         elif guessdiff <= 40:
             New_UserBalance = intUserBalance + intGamble*2
+            new_ghist_u = int(gHistory_u) + intGamble*2
             await client.send_message(message.channel, "Not bad! You're awarded with 2x your bet")
         elif guessdiff <= 50:
             await client.send_message(message.channel, "I've seen better.  You're awarded with your bet")
             New_UserBalance = intUserBalance + intGamble
+            new_ghist_u = int(gHistory_u) + intGamble
         
         update_balance(userID, New_UserBalance)
+        update_gamble_history(userID, new_ghist_u)
 
 idDict = {}
 
@@ -435,7 +488,7 @@ class MyCog(object):
             # add member if they are new
             if str_member not in Members:
                 add_member(str_member)
-            if str_member != 'LogBot#2779' and str_member != 'Rythm#3722':    
+            if str_member != 'LogBot#2779' and str_member != 'Rythm#3722' and str_member != 'BuckBot#0937':    
                 # if member is online give them points
                 if str(member.status) == 'online':
             
