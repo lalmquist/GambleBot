@@ -85,31 +85,35 @@ def check_user(user):
 @client.event
 async def on_message(message):
 
+    if str(message.author) == 'Rythm#3722':
+        await client.send_message('music', message.content)
+        return
+
     strchannel = str(message.channel)
     
     if (message.author == client.user) or (str(message.author) == 'Rythm#3722') or (str(message.author) == 'BuckBot#0937'):
         return
 
-    #if message.content.startswith('$play'):
-    #    playbal = get_balance(str(message.author))
-    #    if int(playbal) < 100:
-    #       await client.send_message(message.channel, "$skip")
-    #        await client.send_message(message.channel, "You're too poor to play a song.  Song play requires 100 points. Your balance is " + str(playbal))
-    #       return
-    #    newplaybal = int(playbal) - 100
-    #   await client.send_message(message.channel, "Playing song. " + str(message.author)[:-5] + " has been charged 100 points.")
-    #   playMemory = message.content
-    #    update_balance(str(message.author), newplaybal)
+    if strchannel == "music":
+        if message.content.startswith('$play'):
+            playbal = get_balance(str(message.author))
+            if int(playbal) < 100:
+                await client.send_message(message.channel, "You're too poor to play a song.  Song play requires 100 points. Your balance is " + str(playbal))
+                return
+            newplaybal = int(playbal) - 100
+            await client.send_message(message.channel, "Playing song. " + str(message.author)[:-5] + " has been charged 100 points.")
+            await client.send_message('bot_music', message.content)
+            update_balance(str(message.author), newplaybal)
         
-    #if message.content == '$skip' or message.content == '$disconnect':
-    #    skipbal = get_balance(str(message.author))
-    #   if int(skipbal) < 200:
-    #        await client.send_message(message.channel, "You're too poor to skip a song.  Skip song requires 200 points. Your balance is " + str(skipbal))
-    #        await client.send_message(message.channel, playMemory)
-    #        return
-    #    newskipbal = int(skipbal) - 200
-    #    await client.send_message(message.channel, "Skipping song. " + str(message.author)[:-5] + " has been charged 200 points.")
-    #    update_balance(str(message.author), newskipbal)
+        if message.content == '$skip' or message.content == '$disconnect':
+            skipbal = get_balance(str(message.author))
+            if int(skipbal) < 200:
+                await client.send_message(message.channel, "You're too poor to skip a song.  Skip song requires 200 points. Your balance is " + str(skipbal))
+                return
+            newskipbal = int(skipbal) - 200
+            await client.send_message(message.channel, "Skipping song. " + str(message.author)[:-5] + " has been charged 200 points.")
+            await client.send_message('bot_music', message.content)
+            update_balance(str(message.author), newskipbal)
         
     if strchannel != "gambling-room":
         return
