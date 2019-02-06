@@ -37,6 +37,9 @@ def update_gamble_history(user, newBal):
 def get_balance_all():
     return Members
 
+def get_ghist_all():
+    return GambleHistory
+
 def add_member(user):
     if user != 'LogBot#2779' and user != 'Rythm#3722' and user != 'BuckBot#0937':
         Members[user] = 0
@@ -358,7 +361,8 @@ async def on_message(message):
     # !balance command
     elif message.content == '!balance':
         user_balance = get_balance(userID)
-        await client.send_message(message.channel, "Your balance is: " + str(user_balance))
+        ghistory = get_gamble_history(userID)
+        await client.send_message(message.channel, "Your balance is: " + str(user_balance) + ". Your gambling has changed your balance by: "+ str(ghistory))
         
         # Chirp Chirp
         intuser_balance = int(user_balance)
@@ -374,6 +378,17 @@ async def on_message(message):
         for key in sorted(all_user_balance, key=keyfunction, reverse=True):
             shortkey = key[:-5]
             newD[shortkey] = all_user_balance[key]
+        
+        await client.send_message(message.channel, dict_print(newD))
+
+    elif message.content == '!ghistoryall':
+        all_user_ghist = get_ghist_all()
+        newD = {}
+        def keyfunction(k):
+            return all_user_ghist[k]
+        for key in sorted(all_user_ghist, key=keyfunction, reverse=True):
+            shortkey = key[:-5]
+            newD[shortkey] = all_user_ghist[key]
         
         await client.send_message(message.channel, dict_print(newD))
         
