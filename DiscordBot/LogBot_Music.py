@@ -105,7 +105,7 @@ async def on_message(message):
             await client.send_message('bot_music', message.content)
             update_balance(str(message.author), newplaybal)
         
-        if message.content == '$skip' or message.content == '$disconnect':
+        if message.content == '$skip':
             skipbal = get_balance(str(message.author))
             if int(skipbal) < 200:
                 await client.send_message(message.channel, "You're too poor to skip a song.  Skip song requires 200 points. Your balance is " + str(skipbal))
