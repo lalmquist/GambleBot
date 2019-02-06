@@ -43,6 +43,12 @@ def add_member(user):
         with open('Members.json', 'w') as outfile:
             json.dump(Members, outfile)
 
+def add_member_gh(user):
+    if user != 'LogBot#2779' and user != 'Rythm#3722' and user != 'BuckBot#0937':
+        GambleHistory[user] = 0
+        with open('GambleHistory.json', 'w') as outfile:
+            json.dump(GambleHistory, outfile)
+
 def dict_print(d):
     string = ''
     for key, value in d.items():
@@ -467,6 +473,7 @@ async def on_ready():
         # add member if they are new
         if str_member not in Members:
             add_member(str_member)
+            add_member_gh(str_member)
     
 class MyCog(object):
     def __init__(self,bot):
@@ -488,6 +495,7 @@ class MyCog(object):
             # add member if they are new
             if str_member not in Members:
                 add_member(str_member)
+                add_member_gh(str_member)
             if str_member != 'LogBot#2779' and str_member != 'Rythm#3722' and str_member != 'BuckBot#0937':    
                 # if member is online give them points
                 if str(member.status) == 'online':
