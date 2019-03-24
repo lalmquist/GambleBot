@@ -8,7 +8,7 @@ from discord.utils import get
 
 client = discord.Client()
 
-with open('Members.json') as f:
+with open('Members2.json') as f:
     Members = json.load(f)
 
 with open('GambleHistory.json') as f:
@@ -26,7 +26,7 @@ def get_gamble_history(user):
 
 def update_balance(user, newBal):
     Members[user] = newBal
-    with open('Members.json', 'w') as outfile:
+    with open('Members2.json', 'w') as outfile:
         json.dump(Members, outfile)
 
 def update_gamble_history(user, newBal):
@@ -41,13 +41,13 @@ def get_ghist_all():
     return GambleHistory
 
 def add_member(user):
-    if user != 'LogBot#2779' and user != 'Rythm#3722' and user != 'BuckBot#0937':
+    if user != 'Shitty LogBot#6506' and user != 'Rythm#3722':
         Members[user] = 0
-        with open('Members.json', 'w') as outfile:
+        with open('Members2.json', 'w') as outfile:
             json.dump(Members, outfile)
 
 def add_member_gh(user):
-    if user != 'LogBot#2779' and user != 'Rythm#3722' and user != 'BuckBot#0937':
+    if user != 'Shitty LogBot#6506' and user != 'Rythm#3722':
         GambleHistory[user] = 0
         with open('GambleHistory.json', 'w') as outfile:
             json.dump(GambleHistory, outfile)
@@ -65,10 +65,10 @@ def check_gamble_amount(user, gamount):
         intGamble = int(gamount)
     except:
         return 1
-                                        
+                    
     if gamount == '':
         return 1
-        
+    
     if intGamble > intUserBalance:
         return 2
     else:
@@ -81,43 +81,17 @@ def check_user(user):
     except:
         return False
 
-        
+
 @client.event
 async def on_message(message):
 
-    if str(message.author) == 'Rythm#3722':
-        await client.send_message((client.get_channel('539081348787208213'), message.content)
-        return
-
     strchannel = str(message.channel)
-    
-    if (message.author == client.user) or (str(message.author) == 'Rythm#3722') or (str(message.author) == 'BuckBot#0937'):
+
+    if (message.author == client.user) or (str(message.author) == 'Rythm#3722'):
+        return
+    if strchannel != "gambling_room":
         return
 
-    if strchannel == "music":
-        if message.content.startswith('$play'):
-            playbal = get_balance(str(message.author))
-            if int(playbal) < 100:
-                await client.send_message(message.channel, "You're too poor to play a song.  Song play requires 100 points. Your balance is " + str(playbal))
-                return
-            newplaybal = int(playbal) - 100
-            await client.send_message(message.channel, "Playing song. " + str(message.author)[:-5] + " has been charged 100 points.")
-            await client.send_message(client.get_channel('542719080851963924'), message.content)
-            update_balance(str(message.author), newplaybal)
-        
-        if message.content == '$skip':
-            skipbal = get_balance(str(message.author))
-            if int(skipbal) < 200:
-                await client.send_message(message.channel, "You're too poor to skip a song.  Skip song requires 200 points. Your balance is " + str(skipbal))
-                return
-            newskipbal = int(skipbal) - 200
-            await client.send_message(message.channel, "Skipping song. " + str(message.author)[:-5] + " has been charged 200 points.")
-            await client.send_message(client.get_channel('542719080851963924'), message.content)
-            update_balance(str(message.author), newskipbal)
-        
-    if strchannel != "gambling-room":
-        return
-    
     userID = str(message.author)
 
     gHistory_u = get_gamble_history(userID)
@@ -125,7 +99,7 @@ async def on_message(message):
     userbalance = get_balance(userID)
     intUserBalance = int(userbalance)
     gamblemessage = message.content
-    
+
     # !gamble command multiple
     if message.content.startswith('!duel'):
     
@@ -190,7 +164,7 @@ async def on_message(message):
                 return
         
         oppbalance = get_balance(OpponentID)
-        
+
         gHistory_o = get_gamble_history(OpponentID)
         intOppBalance = int(oppbalance)
         
@@ -216,16 +190,10 @@ async def on_message(message):
                     if UserGuessReceived == 0:
                         New_UserBalance = intUserBalance - intGamble
                         update_balance(userID, New_UserBalance)
-                        
-                        new_ghist_u = int(gHistory_u) - intGamble
-                        update_gamble_history(userID, new_ghist_u)
                 
                     if OppGuessReceived == 0:
                         New_OppBalance = intOppBalance - intGamble
                         update_balance(OpponentID, New_OppBalance)
-                        
-                        new_ghist_o = int(gHistory_o) - intGamble
-                        update_gamble_history(OpponentID, new_ghist_o)
                     
                         await client.send_message(message.channel, "Too slow, you lose your gamble")
                         return
@@ -251,7 +219,6 @@ async def on_message(message):
         opponent_guessdiff = abs(intOppGuess-BotNumber)
         intUserGuess = int(UserGuess)
         user_guessdiff = abs(intUserGuess-BotNumber)
-
         
         await client.send_message(message.channel, "LogBot secret number: " + str(BotNumber))
         
@@ -259,167 +226,137 @@ async def on_message(message):
             #holy moly give everybody a milly
             New_UserBalance = intUserBalance + intGamble*1000
             New_OppBalance = intOppBalance + intGamble*1000
-            new_ghist_u = int(gHistory_u) + intGamble*1000
-            new_ghist_o = int(gHistory_o) + intGamble*1000
             await client.send_message(message.channel, "You both guessed the secret number!, You're rich bitch!!!!!")
         
         if user_guessdiff == 0:
             #user win a bunch
             New_UserBalance = intUserBalance + intGamble*100
             New_OppBalance = intOppBalance - intGamble
-            new_ghist_u = int(gHistory_u) + intGamble*100
-            new_ghist_o = int(gHistory_o) - intGamble
             await client.send_message(message.channel, userID[:-5] + " guessed the secret number!")
         
         if opponent_guessdiff == 0:
             #opponent win a bunch
             New_UserBalance = intUserBalance - intGamble
             New_OppBalance = intOppBalance + intGamble*100
-            new_ghist_u = int(gHistory_u) - intGamble
-            new_ghist_o = int(gHistory_o) + intGamble*100
             await client.send_message(message.channel, OpponentID[:-5] + " wins!")
         
         if opponent_guessdiff < user_guessdiff:
             # opponent wins
             New_UserBalance = intUserBalance - intGamble
             New_OppBalance = intOppBalance + intGamble
-            new_ghist_u = int(gHistory_u) - intGamble
-            new_ghist_o = int(gHistory_o) + intGamble
             await client.send_message(message.channel, OpponentID[:-5] + " wins!")
         
         elif opponent_guessdiff == user_guessdiff:
             # tie goes to opponent
             New_UserBalance = intUserBalance - intGamble
             New_OppBalance = intOppBalance + intGamble
-            new_ghist_u = int(gHistory_u) - intGamble
-            new_ghist_o = int(gHistory_o) + intGamble
             await client.send_message(message.channel, "Tie goes to " + OpponentID[:-5] + " because " + userID[:-5] + " initiated.")
         
         else:
             # initializer wins
             New_UserBalance = intUserBalance + intGamble
             New_OppBalance = intOppBalance - intGamble
-            new_ghist_u = int(gHistory_u)
-            new_ghist_o = int(gHistory_o) - intGamble
             await client.send_message(message.channel, userID[:-5] + " wins!")
         
         update_balance(userID, New_UserBalance)
         update_balance(OpponentID, New_OppBalance)
-        update_gamble_history(userID, new_ghist_u)
-        update_gamble_history(OpponentID, new_ghist_o)
-        
-    
-    
-    # !gamble command alone
+
+    # !gamble command
     if message.content.startswith('!gamble'):
-    
+
         # cut message to only gamble value
         gambleamount = gamblemessage[8:]
-        
+
         check_results = check_gamble_amount(userID, gambleamount)
-        
+
         #invalid entry
         if check_results == 1:
+
             await client.send_message(message.channel, "Type !help for commands.  Need to enter gamble value.")
             return
-        
+
         #balance too low
         elif check_results == 2:
-            userbal = get_balance(userID)        
+            userbal = get_balance(userID)
             await client.send_message(message.channel, "You're too poor to make this bet. Your balance is " + str(userbal))
             return
-        
+
         intGamble = int(gambleamount)
-        
+
+        # for now, hardcode roll to 100
         rollsize = 100
         userroll = random.randint(0, rollsize)
         botroll = random.randint(0, rollsize)
-        
+                    
         await client.send_message(message.channel, "Your roll: " + str(userroll) + "\nLogBot roll: " + str(botroll))
-        
+                    
         # Win
         if botroll > userroll:
             NewUserBalance = intUserBalance - intGamble
-            new_ghist_u = int(gHistory_u) - intGamble
-            await client.send_message(message.channel, "You lose loser")
-        
+            await client.send_message(message.channel, "You lose!")
+                    
         # Lose
         elif botroll < userroll:
             NewUserBalance = intUserBalance + intGamble
-            new_ghist_u = int(gHistory_u) + intGamble
-            await client.send_message(message.channel, "Winner winner chickenSoup dinner!")
-        
+            await client.send_message(message.channel, "Winner winner chicken dinner!")
+                    
         # Tie-Lose
         elif botroll == userroll:
             NewUserBalance = intUserBalance - intGamble
-            new_ghist_u = int(gHistory_u) - intGamble
             await client.send_message(message.channel, "Tie goes to the LogBot")
-        
+                    
         update_balance(userID, NewUserBalance)
-        update_gamble_history(userID, new_ghist_u)
-    
+            
     # !help command
     elif message.content == '!help':
-        await client.send_message(message.channel, 'Type "!duel @user #" to duel @user in guess game for # coins.\nType "!gamble #" to gamble integer amount of coins.\nType "!guess #" to play the guessing game.\nType "!guessrules" to see guess game rules.\nType !balance to see your current balance.\nType !balanceall to see all balances')
-    
+        await client.send_message(message.channel, 'Type "!gamble #" to gamble integer amount of coins.\nType "!guess #" to play the guessing game.\nType "!guessrules" to see guess game rules.\nType "!balance" to see your current balance.\nType "!top10" to see Top10 balances.')
+
     # !balance command
     elif message.content == '!balance':
         user_balance = get_balance(userID)
-        ghistory = get_gamble_history(userID)
-        await client.send_message(message.channel, "Your balance is: " + str(user_balance) + ". Your gambling has changed your balance by: "+ str(ghistory))
-        
+        await client.send_message(message.channel, "Your balance is: " + str(user_balance))
+
         # Chirp Chirp
         intuser_balance = int(user_balance)
-        if intuser_balance < 1000:
+        if intuser_balance < 60:
             await client.send_message(message.channel, 'You gotta pump those numbers up, those are rookie numbers!')
-    
-    # !balanceall command
-    elif message.content == '!balanceall':
+
+    elif message.content == '!guessrules':
+        await client.send_message(message.channel, "LogBot will generate a random number and pick another random number between 0 and the first number.  You will have to guess the number.  If you guess within 50 you don't lose your gamble, if you guess closer you are rewarded based on how close to the target you are.")
+
+    # top 10
+    elif message.content == '!top10':
         all_user_balance = get_balance_all()
         newD = {}
         def keyfunction(k):
             return all_user_balance[k]
-        for key in sorted(all_user_balance, key=keyfunction, reverse=True):
+        for key in sorted(all_user_balance, key=keyfunction, reverse=True)[:10]:
             shortkey = key[:-5]
             newD[shortkey] = all_user_balance[key]
-        
+
         await client.send_message(message.channel, dict_print(newD))
 
-    elif message.content == '!ghistoryall':
-        all_user_ghist = get_ghist_all()
-        newD = {}
-        def keyfunction(k):
-            return all_user_ghist[k]
-        for key in sorted(all_user_ghist, key=keyfunction, reverse=True):
-            shortkey = key[:-5]
-            newD[shortkey] = all_user_ghist[key]
-        
-        await client.send_message(message.channel, dict_print(newD))
-        
-    elif message.content == '!guessrules':
-        await client.send_message(message.channel, "LogBot will generate a random number and pick another random number between 0 and the first number.  You will have to guess the number.  If you guess within 50 you don't lose your gamble, if you guess closer you are rewarded based on how close to the target you are.")
-    
     elif message.content.startswith('!guess'):
-    
+
         # cut message to only gamble value
         guessgamble = gamblemessage[7:]
-        
+
         check_results = check_gamble_amount(userID, guessgamble)
-        
+
         #invalid entry
         if check_results == 1:
-        
+
             await client.send_message(message.channel, "Type !help for commands.  Need to enter gamble value.")
             return
-        
+
         #balance too low
         elif check_results == 2:
-        
+
             await client.send_message(message.channel, "You're too poor to make this bet.")
             return
-        
+
         intGamble = int(guessgamble)
-        guesslimit = random.randint(100, 500)
+        guesslimit = random.randint(50, 300)
         BotNumber = random.randint(0,guesslimit)
         await client.send_message(message.channel, "I'm thinking of a number between 0 and " + str(guesslimit) + "\nWhat is your guess?")
         check_results2 = 1
@@ -428,53 +365,42 @@ async def on_message(message):
             msg = await client.wait_for_message(timeout=30, author=message.author)
             if msg == None:
                 New_UserBalance = intUserBalance - intGamble
-                new_ghist_u = int(gHistory_u) - intGamble
                 update_balance(userID, New_UserBalance)
-                update_gamble_history(userID, new_ghist_u)
                 await client.send_message(message.channel, "Too slow, you lose your gamble")
                 return
             UserGuess = msg.content
             check_results2 = check_gamble_amount(userID, UserGuess)
             if check_results2 == 1:
                 await client.send_message(message.channel, "Type !help for commands.  Need to enter guess value.")
-        
+            
         intUserGuess = int(UserGuess)
         guessdiff = abs(intUserGuess-BotNumber)
-        
+
         await client.send_message(message.channel, "LogBot secret number: " + str(BotNumber))
-        
+
         if guessdiff > 50:
             New_UserBalance = intUserBalance - intGamble
-            new_ghist_u = int(gHistory_u) - intGamble
-            await client.send_message(message.channel, "Better luck next time....loser.")
+            await client.send_message(message.channel, "Better luck next time.")
         elif guessdiff == 0:
             New_UserBalance = intUserBalance + intGamble*10
-            new_ghist_u = int(gHistory_u) + intGamble*10
             await client.send_message(message.channel, "You got it! You must be cheating...You're awarded with 10x your bet")
         elif guessdiff <= 10:
             New_UserBalance = intUserBalance + intGamble*5
-            new_ghist_u = int(gHistory_u) + intGamble*5
             await client.send_message(message.channel, "Not bad! You're awarded with 5x your bet")
         elif guessdiff <= 20:
             New_UserBalance = intUserBalance + intGamble*4
-            new_ghist_u = int(gHistory_u) + intGamble*4
             await client.send_message(message.channel, "Not bad! You're awarded with 4x your bet")
         elif guessdiff <= 30:
             New_UserBalance = intUserBalance + intGamble*3
-            new_ghist_u = int(gHistory_u) + intGamble*3
             await client.send_message(message.channel, "Not bad! You're awarded with 3x your bet")
         elif guessdiff <= 40:
             New_UserBalance = intUserBalance + intGamble*2
-            new_ghist_u = int(gHistory_u) + intGamble*2
             await client.send_message(message.channel, "Not bad! You're awarded with 2x your bet")
         elif guessdiff <= 50:
             await client.send_message(message.channel, "I've seen better.  You're awarded with your bet")
             New_UserBalance = intUserBalance + intGamble
-            new_ghist_u = int(gHistory_u) + intGamble
-        
-        update_balance(userID, New_UserBalance)
-        update_gamble_history(userID, new_ghist_u)
 
+        update_balance(userID, New_UserBalance)
 idDict = {}
 
 @client.event
@@ -492,14 +418,13 @@ async def on_ready():
         # add member if they are new
         if str_member not in Members:
             add_member(str_member)
-            add_member_gh(str_member)
-    
+
 class MyCog(object):
     def __init__(self,bot):
         self.bot = bot
         self.looped_task = bot.create_task(self.looping_function())
         self.data = {}
-    
+        
     def __unload(self):
         try:
             self.looped_task.cancel()
@@ -510,29 +435,28 @@ class MyCog(object):
         for member in client.get_all_members():
             str_member = str(member)
             idDict['<@' + str(member.id) + '>'] = str_member
-    
+
             # add member if they are new
             if str_member not in Members:
                 add_member(str_member)
-                add_member_gh(str_member)
-            if str_member != 'LogBot#2779' and str_member != 'Rythm#3722' and str_member != 'BuckBot#0937':    
+            if str_member !='Shitty LogBot#6506' and str_member != 'Rythm#3722':    
                 # if member is online give them points
                 if str(member.status) == 'online':
-            
+
                     currbalance = get_balance(str_member)
-                        
+
                     intcurr_balance = int(currbalance)
                     intcurr_balance = intcurr_balance + 1
-                        
+
                     #make sure member is str
                     update_balance(str_member, intcurr_balance)
 
-
+        
     async def looping_function(self):
         while True:
             await self.do_stuff()
             await asyncio.sleep(30)
-
+        
 loop = asyncio.get_event_loop()
 Banker = MyCog
 Banker(loop)
@@ -544,5 +468,4 @@ if __name__ == "__main__":
         discordToken = f.read()
 
     # discordToken is the value you get when creating the bot
-
     client.run(discordToken)
