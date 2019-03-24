@@ -335,7 +335,7 @@ async def on_message(message):
     
     # !help command
     elif message.content == '!help':
-        await client.send_message(message.channel, 'Type "!duel @user #" to duel @user in guess game for # coins.\nType "!gamble #" to gamble integer amount of coins.\nType "!guess #" to play the guessing game.\nType "!guessrules" to see guess game rules.\nType !balance to see your current balance.\nType !balanceall to see all balances')
+        await client.send_message(message.channel, 'Type "!duel @user #" to duel @user in guess game for # coins.\nType "!gamble #" to gamble integer amount of coins.\nType "!guess #" to play the guessing game.\nType "!guessrules" to see guess game rules.\nType "!balance" to see your current balance.\nType "!balanceall" to see all balances')
     
     # !balance command
     elif message.content == '!balance':
