@@ -12,16 +12,15 @@ client = discord.Client()
 
 wow_bot_channel = 'general'
 REGION = 'us'
-REALM = 'Emerald Dream'
+REALM = "Kel'Thuzad"
 WOW_CLIENT_ID = ''
 WOW_CLIENT_SECRET = ''
 LOCALE = str(os.environ.get('LOCALE'))
-current_time = 'current_time'
-past_time = 'past_time'
+past_time = datetime.datetime.now()
 
 ########################################
 
-char_list = ['Buckwheat']
+char_list = ['Bearoplane' , 'Buckwheat' , 'Logman']
 
 ########################################
 
@@ -56,13 +55,6 @@ async def get_data(region, access_token, **kwargs):
             print('Error: Connection error occurred when retrieving game data.')
             return 'connection_error'
 
-async def get_all_chars():
-    chars = []
-    for x in char_list:
-        chars.extend(character_info(x,REALM,REGION))
-        return chars
-
-
 async def character_info(name, realm, region):
 
     # Grabs overall character data including their ilvl.
@@ -80,6 +72,8 @@ async def character_info(name, realm, region):
             character_sheet = {
                 'name': info['name'],
                 'level': info['level'],
+                'race': 'null',
+                'class': 'NULL'
             }
             return character_sheet
         except:
@@ -122,15 +116,21 @@ class MyCog(object):
             pass
     
     async def do_stuff(self):
-        global current_time
         current_time = datetime.datetime.now()
         str_current_time = str(current_time)
-        global past_time
         str_past_time = str(past_time)
+
         if str_current_time[0:10] != str_past_time[0:10]:
-            print_all_chars = get_all_chars()
-            await client.send_message(wow_bot_channel, print_all_chars)
-            past_time = current_time
+
+            data = []
+            for x in char_list:
+                data.append(await character_info(x,REALM,REGION))
+
+            new_data = add_extras(data)
+            final_data = process_data(new_data)
+            await client.send_message((client.get_channel('534045914227277847')), final_data)
+
+            past_time == current_time
         
         else:
             return
@@ -147,12 +147,81 @@ Daily_Poster(loop)
 @client.event
 async def on_message(message):
 
-    if (message.author == client.user) or (message.channel != 'general'):
+    if (message.author == client.user):
         return
     
     if message.content == '!levels':
-        print_all_chars = get_all_chars()
-        await client.send_message(wow_bot_channel, print_all_chars)
+
+        data = []
+
+        for x in char_list:
+            data.append(await character_info(x,REALM,REGION))
+        
+        new_data = add_extras(data)
+        final_data = process_data(new_data)
+        await client.send_message(message.channel, final_data)
+
+def add_extras(inpdata):
+    
+    j = 0
+
+    while j < len(inpdata) :
+        
+        if inpdata[j]['name'] == "Logman" : 
+            
+            inpdata[j]['race'] = 'Dwarf'
+            inpdata[j]['class'] = 'Hunter'
+            match_found = True
+
+        if inpdata[j]['name'] == "Xsmqt" : 
+            
+            inpdata[j]['race'] = 'Dwarf'
+            inpdata[j]['class'] = 'Priest'
+            match_found = True
+
+        if inpdata[j]['name'] == "Raltick" : 
+            
+            inpdata[j]['race'] = 'Night Elf'
+            inpdata[j]['class'] = 'Druid'
+            match_found = True
+        
+        if match_found:
+            j += 1
+            match_found = False
+
+    return inpdata
+
+
+def process_data(data):
+    i = 0
+    k = 0
+
+    name_order = []
+    order_dict = {}
+    final_str = ""
+    
+    while i < len(data):
+        order_dict[data[i]['name']] = data[i]['level']
+        i += 1
+
+    def keyfunction(k):
+        return order_dict[k]
+    for key in sorted(order_dict, key=keyfunction, reverse=True):
+        name_order.append(key)
+
+    while k < len(data):
+        j = 0
+        match = False
+        name = name_order[k]
+        while match != True and j < len(data) :
+            if data[j]['name'] == name : 
+                final_str = final_str + str(data[j]['name']) + " - " + str(data[j]['race']) + " " + str(data[j]['class'])+ " - Level : " + str(data[j]['level']) +"\n"
+                match = True
+            else:
+                j += 1
+        k += 1
+    return final_str
+
 
 if __name__ == "__main__":
     
@@ -166,6 +235,6 @@ if __name__ == "__main__":
 
     f=open("wow_client_secret.txt","r")
     if f.mode == 'r':
-        WOW_CLIENT_ID_SECRET = f.read()
+        WOW_CLIENT_SECRET = f.read()
 
     client.run(discordToken)
