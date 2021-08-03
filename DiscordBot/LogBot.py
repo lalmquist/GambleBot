@@ -6,7 +6,8 @@ import discord
 import asyncio
 from discord.utils import get
 
-client = discord.Client()
+intents = discord.Intents.all()
+client = discord.Client(intents=intents)
 
 with open('Members.json') as f:
     Members = json.load(f)
@@ -483,6 +484,7 @@ class MyCog(object):
     
     async def do_stuff(self):
         for member in client.get_all_members():
+            print(member)
             str_member = str(member)
             idDict['<@' + str(member.id) + '>'] = str_member
     
