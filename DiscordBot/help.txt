@@ -1,3 +1,0 @@
-tmux new -s myname
-
-detach: cntrl+b d

@@ -5,83 +5,11 @@ import random
 import discord
 import asyncio
 from discord.utils import get
+from helpers import *
+import globals
 
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
-
-with open('Members.json') as f:
-    Members = json.load(f)
-
-with open('GambleHistory.json') as f:
-    GambleHistory = json.load(f)
-
-def get_balance(user):
-    intBalance = Members[user]
-    strBalance = str(intBalance)
-    return strBalance
-
-def get_gamble_history(user):
-    intBalance = GambleHistory[user]
-    strBalance = str(intBalance)
-    return strBalance
-
-def update_balance(user, newBal):
-    Members[user] = newBal
-    with open('Members.json', 'w') as outfile:
-        json.dump(Members, outfile)
-
-def update_gamble_history(user, newBal):
-    GambleHistory[user] = newBal
-    with open('GambleHistory.json', 'w') as outfile:
-        json.dump(GambleHistory, outfile)
-
-def get_balance_all():
-    return Members
-
-def get_ghist_all():
-    return GambleHistory
-
-def add_member(user):
-    if user != 'LogBot#2779' and user != 'Rythm#3722' and user != 'BuckBot#0937':
-        Members[user] = 0
-        with open('Members.json', 'w') as outfile:
-            json.dump(Members, outfile)
-
-def add_member_gh(user):
-    if user != 'LogBot#2779' and user != 'Rythm#3722' and user != 'BuckBot#0937':
-        GambleHistory[user] = 0
-        with open('GambleHistory.json', 'w') as outfile:
-            json.dump(GambleHistory, outfile)
-
-def dict_print(d):
-    string = ''
-    for key, value in d.items():
-        string = string + str(key) + ' : ' + str(value) + "\n"
-    return string
-
-def check_gamble_amount(user, gamount):
-    userbalance = get_balance(user)
-    intUserBalance = int(userbalance)
-    try:
-        intGamble = int(gamount)
-    except:
-        return 1
-                                        
-    if gamount == '':
-        return 1
-        
-    if intGamble > intUserBalance:
-        return 2
-    else:
-        return 0
-
-def check_user(user):
-    try:
-        test = Members[user]
-        return True
-    except:
-        return False
-
         
 @client.event
 async def on_message(message):
@@ -489,7 +417,7 @@ async def on_ready():
         idDict['<@!' + str(member.id) + '>'] = str_member
 
         # add member if they are new
-        if str_member not in Members:
+        if str_member not in globals.Members:
             add_member(str_member)
             add_member_gh(str_member)
     
@@ -511,7 +439,7 @@ class MyCog(object):
             idDict['<@!' + str(member.id) + '>'] = str_member
     
             # add member if they are new
-            if str_member not in Members:
+            if str_member not in globals.Members:
                 add_member(str_member)
                 add_member_gh(str_member)
             if str_member != 'LogBot#2779' and str_member != 'Rythm#3722' and str_member != 'BuckBot#0937':    
