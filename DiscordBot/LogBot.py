@@ -85,7 +85,12 @@ def check_user(user):
         
 @client.event
 async def on_message(message):
-    #channel = client.get_channel(872238212528087061)
+    def check_msg_user(m):
+        return m.channel == channel and m.author == message.author
+
+    def check_msg_chan(m):
+        return m.channel == channel
+
     channel = message.channel
     
     strchannel = str(message.channel)
@@ -103,9 +108,11 @@ async def on_message(message):
     userbalance = get_balance(userID)
     intUserBalance = int(userbalance)
     gamblemessage = message.content
+
+    msg_lower = message.content.lower()
     
     # !gamble command multiple
-    if message.content.startswith('!duel'):
+    if msg_lower.startswith('!duel'):
     
         messagestr = str(message.content)
         messagesplit = messagestr.split()
@@ -117,7 +124,7 @@ async def on_message(message):
             duelgamble = messagesplit[2]
             opponent = messagesplit[1]        
         except:
-            await channel.send('Type "!Duel @OpponentName GambleAmount".')
+            await channel.send('Type "!duel @OpponentName GambleAmount".')
             return
         
         opp = idDict[opponent]
@@ -155,8 +162,9 @@ async def on_message(message):
         await channel.send(opponent + " do you accept? Type 'Accept' or 'Decline'.")
         
         while OppAccept == 0:
-            OppResponse = await client.wait_for_message(timeout=30)
-            if OppResponse == None:
+            try:
+                OppResponse = await client.wait_for('message', timeout=30, check=check_msg_chan)
+            except asyncio.TimeoutError:
                 await channel.send("Opponent didn't respond in time.")
                 return
             StrResponse = str(OppResponse.content)
@@ -190,8 +198,9 @@ async def on_message(message):
                 if UserGuessReceived == 1 and OppGuessReceived == 1:
                     GuessesReceived = 1
 
-                msg = await client.wait_for_message(timeout=60)
-                if msg == None:
+                try:
+                    msg = await client.wait_for('message', timeout=60, check=check_msg_chan)
+                except asyncio.TimeoutError:
                     if UserGuessReceived == 0:
                         New_UserBalance = intUserBalance - intGamble
                         update_balance(userID, New_UserBalance)
@@ -206,8 +215,8 @@ async def on_message(message):
                         new_ghist_o = int(gHistory_o) - intGamble
                         update_gamble_history(OpponentID, new_ghist_o)
                     
-                        await channel.send("Too slow, you lose your gamble")
-                        return
+                    await channel.send("Too slow, you lose your gamble")
+                    return
 
                 if str(msg.author) == str(userID) and UserGuessReceived == 0:
                     UserGuess = msg.content
@@ -290,7 +299,7 @@ async def on_message(message):
     
     
     # !gamble command alone
-    if message.content.startswith('!gamble'):
+    if msg_lower.startswith('!gamble'):
     
         # cut message to only gamble value
         gambleamount = gamblemessage[8:]
@@ -338,7 +347,7 @@ async def on_message(message):
         update_gamble_history(userID, new_ghist_u)
     
     # !help command
-    elif message.content == '!help':
+    elif msg_lower == '!help':
         await channel.send('Type "!duel @user #" to duel @user in guess game for # coins.\n' +
                             'Type "!gamble #" to gamble integer amount of coins.\n' +
                             'Type "!guess #" to play the guessing game.\n' +
@@ -348,7 +357,7 @@ async def on_message(message):
                             'Type "!ghistoryall" to see all gamble history.')
     
     # !balance command
-    elif message.content == '!balance':
+    elif msg_lower == '!balance':
         user_balance = get_balance(userID)
         ghistory = get_gamble_history(userID)
         await channel.send("Your balance is: " + str(user_balance) + ". Your gambling has changed your balance by: "+ str(ghistory))
@@ -359,7 +368,7 @@ async def on_message(message):
             await channel.send('You gotta pump those numbers up, those are rookie numbers!')
     
     # !balanceall command
-    elif message.content == '!balanceall':
+    elif msg_lower == '!balanceall':
         all_user_balance = get_balance_all()
         newD = {}
         def keyfunction(k):
@@ -370,7 +379,7 @@ async def on_message(message):
         
         await channel.send(dict_print(newD))
 
-    elif message.content == '!ghistoryall':
+    elif msg_lower == '!ghistoryall':
         all_user_ghist = get_ghist_all()
         newD = {}
         def keyfunction(k):
@@ -381,10 +390,10 @@ async def on_message(message):
         
         await channel.send(dict_print(newD))
         
-    elif message.content == '!guessrules':
+    elif msg_lower == '!guessrules':
         await channel.send("LogBot will generate a random number and pick another random number between 0 and the first number.  You will have to guess the number.  If you guess within 50 you don't lose your gamble, if you guess closer you are rewarded based on how close to the target you are.")
     
-    elif message.content.startswith('!guess'):
+    elif msg_lower.startswith('!guess'):
     
         # cut message to only gamble value
         guessgamble = gamblemessage[7:]
@@ -414,8 +423,9 @@ async def on_message(message):
             def check(msg):
                 return msg.author == message.author
 
-            msg = await client.wait_for('message', timeout=30, check=check)
-            if msg == None:
+            try:
+                msg = await client.wait_for('message', timeout=30, check=check_msg_user)
+            except asyncio.TimeoutError:
                 New_UserBalance = intUserBalance - intGamble
                 new_ghist_u = int(gHistory_u) - intGamble
                 update_balance(userID, New_UserBalance)
